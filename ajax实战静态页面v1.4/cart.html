@@ -1,0 +1,164 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport"
+		content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=0">
+	<title>购物车</title>
+	<link rel="stylesheet" type="text/css" href="./css/cart.css" />
+	<link rel="stylesheet" href="./lib/iconfont/iconfont.css">
+</head>
+
+<body>
+	<div class="body">
+		<div class="shop"><i class="iconfont icon-fanhui"></i><span>我的购物车</span></div>
+		<div class="product" id="tplbox">
+			<script type="text/html" id="tpl">
+				{{each data}}
+				<div class="product-box">
+					<div class="product-ckb"><em class="product-em"></em></div>
+					<div class="product-sx">
+
+						<a href="###">
+							<img src="http://www.shop.com{{$value.fileurl}}" class="product-img" />
+							<span class="product-name">{{$value.name}}</span>
+						</a>
+						<span class="product-price">¥&thinsp;<span class="price">{{$value.price}}</span></span>
+						<div class="product-amount">
+							<div class="product_gw">
+								<em class="product-jian">-</em>
+								<input type="text" value="{{$value.num}}" class="product-num" />
+								<em class="product-add" id="adnum">+</em>
+							</div>
+						</div>
+						<div class="product-del">
+							<span class="iconfont icon-shanchu" id="shanchu" data-id="{{$value.id}}"></span>
+						</div>
+
+					</div>
+				</div>
+				{{/each}}
+			</script>
+
+		</div>
+
+		<div class="product-js">
+			<div class="product-al">
+				<div class="product-all">
+					<em class=""></em>
+				</div>
+				<div class="all-xz"><span class="product-all-qx">全选</span>
+					<div class="all-sl" style="display: none;">(<span class="product-all-sl">0</span>)</div>
+				</div>
+			</div>
+			<a href="success.html" class="product-sett product-sett-a">结算</a>
+			<div class="all-product"><span class="all-product-a">¥&thinsp;<span class="all-price">296</span></span>
+			</div>
+
+		</div>
+		</script>
+	</div>
+	<!--购物车空-->
+	<div class="kon-cat">
+		<div class="catkon">
+			<div class="kon-box">
+				<div class="kon-hz">
+					<img src="img/cart-air.png" />
+					<span class="kon-wz">购物车什么都没有</span>
+					<a href="###" class="kon-lj">去逛逛</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="./lib/jquery.min.js"></script>
+	<script src="./lib/template-web.js"></script>
+	<script src="./js/cart.js" type="text/javascript" charset="utf-8"></script>
+	<script>
+		$(function () {
+			$('.product-sett').on('click', function () {
+				window.location = "success.html"
+			});
+			$('.icon-fanhui').on('click', function () {
+				window.location = 'goodsList.html'
+			});
+			var num = '';
+
+			// 删除数据提交到服务器
+			$('#tplbox').on('click', '#shanchu', function () {
+				var id = $(this).attr('data-id')
+				console.log(id);
+				var token = localStorage.getItem('token')
+				$.ajax({
+					method: 'get',
+					url: 'http://www.shop.com/api/cart/remove',
+					data: {
+						id: id,
+						token: token,
+					},
+					success: function (res) {
+						getGoodsList()
+						console.log(res);
+
+					}
+				})
+			})
+			//编辑数据提交到服务器	
+			$('#tplbox').on('click', '#adnum', function () {
+				var id = $(this).parents().find('#shanchu').attr('data-id')
+				var token = localStorage.getItem('token')
+				console.log(id);
+				num++
+				// $(this).siblings('.product-num').val(num);
+				// console.log(num);
+				
+				editGoods(id,token,num)
+				function editGoods(id,token,num) {
+					$.ajax({
+						method: 'get',
+						url: 'http://www.shop.com/api/cart/edit',
+						data: {
+							id: id,
+							token: token,
+							num: num
+						},
+						success: function (res) {
+							getGoodsList(res)
+							console.log(res);
+
+						}
+					})
+				}
+			})
+			// console.log(id, token, price);
+			getGoodsList()
+		});
+
+		function getGoodsList() {
+			var token = localStorage.getItem('token')
+			$.ajax({
+				method: 'get',
+				url: 'http://www.shop.com/api/cart/getlist',
+				data: {
+					token: token
+				},
+				success: function (res) {
+					if (res.data.length >= 0) {
+						$('.kon-cat').css('display', 'none')
+					}
+					console.log(res.data);
+					var html = template('tpl', res);
+					// console.log(html);
+					$('#tplbox').html(html);
+
+				}
+			})
+		}
+
+		var id = localStorage.getItem('id')
+		var price = localStorage.getItem('price')
+	</script>
+</body>
+
+
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title></title>
+	<meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0" name="viewport" />
+	<meta content="yes" name="apple-mobile-web-app-capable" />
+	<meta content="black" name="apple-mobile-web-app-status-bar-style" />
+	<meta content="telephone=no" name="format-detection" />
+	<link rel="stylesheet" href="./lib/iconfont/iconfont.css">
+	<link rel="stylesheet" href="./lib/vant/index.css">
+	<link href="css/goodsList.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body>
+	<section class="aui-flexView">
+		<section class="aui-scrollView">
+			<div class="aui-shop-change">
+				<div class="aui-search-box">
+					<i class="icon icon-search"></i>
+					<input type="text" placeholder="搜索商品">
+				</div>
+			</div>
+			<div class="aui-list-theme-box" id="tplbox">
+				<script type="text/html" id="tpl">
+					{{each data}}
+					<a href="javascript:;" class="aui-list-item">
+						<div class="aui-list-theme-img">
+							<img src="http://www.shop.com{{$value.fileurl}}" alt="" id="img" data-id="{{$value.id}}">
+						</div>
+						<div class="aui-list-theme-message">
+							<h3 class="aui-list-theme-title">{{$value.name}}</h3>
+							<h3 class="aui-list-theme-subtitle">{{$value.content}}</h3>
+							<div class="aui-flex">
+								<div class="aui-flex-box">
+									<h2 id="price1" data-price="{{$value.price}}"><em>￥</em><i></i>{{$value.price}} <i>￥899</i></h2>
+								</div>
+								<div class="aui-coupon" id="ad"><span class="iconfont icon-gouwuche"></span></div>
+							</div>
+						</div>
+					</a>
+
+					{{/each}}
+				</script>
+			</div>
+			<div class="aui-pagination">
+				<div class="aui-pagination-prev disabled">
+					<i class="van-icon van-icon-arrow-left" id="prev"></i>
+				</div>
+				<div class="aui-pagination-page">
+					1/5,共30件商品
+				</div>
+				<div class="aui-pagination-next" id="next">
+					<i class="van-icon van-icon-arrow"></i>
+				</div>
+			</div>
+		</section>
+	</section>
+	<div class="van-hairline--top-bottom van-tabbar van-tabbar--fixed">
+		<div class="van-tabbar-item van-tabbar-item--active">
+			<div class="van-tabbar-item__icon">
+				<i class="van-icon van-icon-wap-home-o"></i>
+			</div>
+			<div class="van-tabbar-item__text">商品</div>
+		</div>
+		<div class="van-tabbar-item">
+			<div class="van-tabbar-item__icon">
+				<i class="van-icon van-icon-shopping-cart-o"></i>
+			</div>
+			<div class="van-tabbar-item__text" id="addcar">购物车</div>
+		</div>
+	</div>
+</body>
+<script src="./lib/jquery.min.js"></script>
+<script src="./lib/template-web.js"></script>
+
+<script>
+	// $(function () {
+	// 	// 创建异步对象
+	// 	var xhr = new XMLHttpRequest()
+	// 	// 设置请求参数
+	// 	xhr.open('GET', 'http://www.shop.com/api/goods/getlist?page=1')
+
+	// 	// 发送请求
+	// 	xhr.send()
+	// 	// 设置 回调函数
+	// 	xhr.onreadystatechange = function () {
+	// 		// 当 准备状态==4 说明 已经接收完毕服务器返回的数据，再判断 status是否==200，这样说明服务器没有出错
+	// 		if (xhr.readyState === 4 && xhr.status === 200) {
+	// 			// 打印 返回的 数据
+	// 			(JSON.parse(xhr.responseText))
+	// 		}
+	// 	}
+	// })
+	var token = localStorage.getItem('token')
+	// var id = localStore.getItem('id')
+	var page = 1;
+	$(function () {
+		getNewsList(page);
+	});
+	$("#next").on('click', function () {
+		page++
+		if (page == 4) {
+			page = 1
+		}
+		getNewsList(page)
+	})
+	//a.声明 获取 新闻列表 的方法
+	function getNewsList(page, search) {
+		console.log(page);
+		//b.发送异步请求 到 服务 获取 数据
+		$.ajax({
+			method: 'get',
+			url: 'http://www.shop.com/api/goods/getlist',
+			data: {
+				page: page,
+				search: search
+			},
+			success: function (res) {
+				// c.如果 不成功，则提示错误
+				if (res.code !== 2000) return alert('对不起，服务器繁忙，请稍后再试~~');
+				console.log(res);
+				var html = template('tpl', res);
+				// console.log(html);
+				$('#tplbox').html(html);
+				console.log(res.data[0].price);
+			}
+		});
+	};
+
+	//商品详情页面
+
+	$('#addcar').on('click', function () {
+		var id = $(this).attr('data-id')
+		localStorage.setItem('id', id)
+		window.location = 'cart.html'
+
+	})
+	$('#tplbox').on('click', '#ad', function () {
+		var id = $(this).parents('.aui-list-item').find('#img').attr('data-id')
+		var price = $(this).parents('.aui-flex').find('#price1').attr('data-price');
+		localStorage.setItem('id', id)
+		localStorage.setItem('price',price)
+		var token = localStorage.getItem('token')
+			$.ajax({
+			method: 'get',
+			url: 'http://www.shop.com/api/cart/add',
+			data: {
+				gid: id,
+				price:price,
+				token: token
+			},
+			success: function(res){
+				console.log(res);
+			}
+			
+
+
+		});	
+
+		}
+	);
+	$('#tplbox').on('click', 'img', function () {
+		var id = $(this).attr('data-id')
+		localStorage.setItem('id', id)
+		window.location = 'goodsinfo.html'
+
+
+
+	})
+</script>
+
+</html>
