@@ -62,9 +62,9 @@
 				$.post('http://www.shop.com/api/member/register', strData, function(res){
 					if(res.code===2000) {
 					window.location='login.html'
-						console.log(res.code);
+						alert("欢迎光临本商城购物");
 					} else {
-						console.log(res.msg);
+						alert(res.msg);
 					}
 				})
 

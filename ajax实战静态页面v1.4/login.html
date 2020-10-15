@@ -54,6 +54,7 @@
 					if (res.code === 2000) {
 						localStorage.setItem('token', res.token)
 						window.location = 'goodsList.html'
+						alert("欢迎光临本商城购物")
 					} else {
 						alert(res.msg);
 					}
